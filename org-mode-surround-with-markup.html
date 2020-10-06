@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-10-06 Tue 17:16 -->
+<!-- 2020-10-06 Tue 17:24 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Insert Syntax Markup Efficiently in Org-mode</title>
@@ -283,7 +283,9 @@ such as <code>~/.emacs.d/init.el</code>:
            (right-char (<span style="color: #e45649;">if</span> close (car close) c))
            (pos-left (min p m))
            (pos-right (+ (length c) (max p m)))
-           (pos-finish (<span style="color: #e45649;">if</span> (&gt; p m) (+ pos-right (length right-char)) pos-left)))
+           (pos-finish (<span style="color: #e45649;">if</span> (&gt; p m)
+                           (+ pos-right (length right-char))
+                         pos-left)))
       (<span style="color: #e45649;">save-excursion</span>
         (goto-char pos-left)
         (insert left-char)
@@ -314,7 +316,8 @@ such as <code>~/.emacs.d/init.el</code>:
           (ido-completing-read <span style="color: #50a14f;">"surround with: "</span>
                                options))
     (<span style="color: #e45649;">setq</span> idx (nth-elt c options))
-    (my-surround-text-with (nth idx left) (nth idx right))))
+    (my-surround-text-with (nth idx left)
+                           (nth idx right))))
 
 (<span style="color: #e45649;">defun</span> <span style="color: #a626a4;">my-org-s</span> (n)
   <span style="color: #84888b; font-style: italic;">"insert s if mark is not active, else add markup"</span>
@@ -332,17 +335,18 @@ Then adding the following configurations:
 
 <div class="org-src-container">
 <pre class="src src-elisp"><span style="color: #9ca0a4;">;; </span><span style="color: #9ca0a4;">the menu options</span>
-(<span style="color: #e45649;">setq</span> org-surround-options `(
-                           (<span style="color: #50a14f;">"bold(*)"</span> <span style="color: #50a14f;">"*"</span> <span style="color: #50a14f;">"*"</span>)
-                           (<span style="color: #50a14f;">"code(~)"</span> <span style="color: #50a14f;">"~"</span> <span style="color: #50a14f;">"~"</span>)
-                           (<span style="color: #50a14f;">"underline(_)"</span> <span style="color: #50a14f;">"_"</span> <span style="color: #50a14f;">"_"</span>)
-                           (<span style="color: #50a14f;">"italic(/)"</span> <span style="color: #50a14f;">"/"</span> <span style="color: #50a14f;">"/"</span>)
-                           (<span style="color: #50a14f;">"strike(+)"</span> <span style="color: #50a14f;">"+"</span> <span style="color: #50a14f;">"+"</span>)
-                           (<span style="color: #50a14f;">"verbatim(=)"</span> <span style="color: #50a14f;">"="</span> <span style="color: #50a14f;">"="</span>)
-                           (<span style="color: #50a14f;">"math($)"</span> <span style="color: #50a14f;">"</span><span style="color: #4078f2; font-weight: bold;">\\</span><span style="color: #4078f2; font-weight: bold;">(</span><span style="color: #50a14f;">"</span> <span style="color: #50a14f;">"</span><span style="color: #4078f2; font-weight: bold;">\\</span><span style="color: #4078f2; font-weight: bold;">)</span><span style="color: #50a14f;">"</span>)
-                           (<span style="color: #50a14f;">"example(e)"</span> <span style="color: #50a14f;">"#+begin_example\n"</span> <span style="color: #50a14f;">"\n#+end_example\n"</span>)
-                           (<span style="color: #50a14f;">"source(s)"</span> <span style="color: #50a14f;">"#+begin_src \n"</span> <span style="color: #50a14f;">"\n#+end_src\n"</span>)
-                           ))
+(<span style="color: #e45649;">setq</span> org-surround-options
+      `(
+        (<span style="color: #50a14f;">"bold(*)"</span> <span style="color: #50a14f;">"*"</span> <span style="color: #50a14f;">"*"</span>)
+        (<span style="color: #50a14f;">"code(~)"</span> <span style="color: #50a14f;">"~"</span> <span style="color: #50a14f;">"~"</span>)
+        (<span style="color: #50a14f;">"underline(_)"</span> <span style="color: #50a14f;">"_"</span> <span style="color: #50a14f;">"_"</span>)
+        (<span style="color: #50a14f;">"italic(/)"</span> <span style="color: #50a14f;">"/"</span> <span style="color: #50a14f;">"/"</span>)
+        (<span style="color: #50a14f;">"strike(+)"</span> <span style="color: #50a14f;">"+"</span> <span style="color: #50a14f;">"+"</span>)
+        (<span style="color: #50a14f;">"verbatim(=)"</span> <span style="color: #50a14f;">"="</span> <span style="color: #50a14f;">"="</span>)
+        (<span style="color: #50a14f;">"math($)"</span> <span style="color: #50a14f;">"</span><span style="color: #4078f2; font-weight: bold;">\\</span><span style="color: #4078f2; font-weight: bold;">(</span><span style="color: #50a14f;">"</span> <span style="color: #50a14f;">"</span><span style="color: #4078f2; font-weight: bold;">\\</span><span style="color: #4078f2; font-weight: bold;">)</span><span style="color: #50a14f;">"</span>)
+        (<span style="color: #50a14f;">"example(e)"</span> <span style="color: #50a14f;">"#+begin_example\n"</span> <span style="color: #50a14f;">"\n#+end_example\n"</span>)
+        (<span style="color: #50a14f;">"source(s)"</span> <span style="color: #50a14f;">"#+begin_src \n"</span> <span style="color: #50a14f;">"\n#+end_src\n"</span>)
+        ))
 <span style="color: #9ca0a4;">;; </span><span style="color: #9ca0a4;">add key bindings</span>
 (define-key org-mode-map (kbd <span style="color: #50a14f;">"s"</span>) 'my-org-s)
 </pre>
@@ -360,14 +364,13 @@ characters")</code>.
 <h2 id="org419945f"><span class="section-number-2">3</span> Usage</h2>
 <div class="outline-text-2" id="text-3">
 <p>
-In an Org buffer, first mark some text, and press <code>s</code>, then select from the
-options in the echo area.
-It uses <code>ido</code>, so incremental search is
+In an Org buffer, first mark some  text, and press <code>s</code>, then select from
+the options in  the echo area.  It uses <code>ido</code>,  so incremental search is
 available. Sweet.
 </p>
 
 
-<div id="orgc2a77f6" class="figure">
+<div id="org1af8e11" class="figure">
 <p><img src="./org-mode-surround-with-markup.org_1601973935.png" alt="org-mode-surround-with-markup.org_1601973935.png" />
 </p>
 </div>
@@ -376,7 +379,7 @@ available. Sweet.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 邵传明</p>
-<p class="date">Created: 2020-10-06 Tue 17:16</p>
+<p class="date">Created: 2020-10-06 Tue 17:24</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
