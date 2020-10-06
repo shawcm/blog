@@ -6,7 +6,7 @@
 <!-- 2020-10-06 Tue 17:16 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sitemap</title>
+<title>Insert Syntax Markup Efficiently in Org-mode</title>
 <meta name="generator" content="Org mode" />
 <meta name="author" content="邵传明" />
 <style type="text/css">
@@ -193,6 +193,12 @@
   .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/styles/readtheorg/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/styles/readtheorg/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/styles/readtheorg/js/readtheorg.js"></script>
 <script type="text/javascript">
 // @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
 <!--/*--><![CDATA[/*><!--*/
@@ -217,13 +223,156 @@
 </script>
 </head>
 <body>
-<div id="content">
-<h1 class="title">Sitemap</h1>
-<ul class="org-ul">
-<li><a href="index.html">Cyunming’s Blog</a></li>
-<li><a href="org-mode-surround-with-markup.html">Insert Syntax Markup Efficiently in Org-mode</a></li>
-<li><a href="t.html">Testing My First Blog using Org-Mode</a></li>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href=""> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<h1 class="title">Insert Syntax Markup Efficiently in Org-mode</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9ad607a">1. Org Syntax</a></li>
+<li><a href="#org7c58c79">2. Install</a></li>
+<li><a href="#org419945f">3. Usage</a></li>
 </ul>
+</div>
+</div>
+
+<div id="outline-container-org9ad607a" class="outline-2">
+<h2 id="org9ad607a"><span class="section-number-2">1</span> Org Syntax</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Since Org is plain text, adding markups (bold, verbatim, etc.) is done
+by inserting certain characters at the beginning and end of text.  It
+is annoying when you need to adding markups to some text, since it
+requires you to:
+</p>
+
+<ol class="org-ol">
+<li>move cursor to the start position</li>
+<li>insert some charaters (such as <code>*</code>)</li>
+<li>move cursor to the end position</li>
+<li>insert some charaters (such as <code>*</code>)</li>
+</ol>
+
+<p>
+Here is a piece of Elisp that I used to make this process smoother. It
+allows you add common markups around a text area by interactively
+choosing from a menu provided by <code>ido</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c58c79" class="outline-2">
+<h2 id="org7c58c79"><span class="section-number-2">2</span> Install</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+First, adding the following function definations to your <code>init</code> file,
+such as <code>~/.emacs.d/init.el</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(<span style="color: #e45649;">defun</span> <span style="color: #a626a4;">my-surround-text-with</span> (c <span style="color: #986801;">&amp;rest</span> close)
+  <span style="color: #84888b; font-style: italic;">"insert some surround text to the region"</span>
+  (<span style="color: #e45649;">when</span> (<span style="color: #e45649;">and</span> (stringp c) (<span style="color: #e45649;">or</span> (null close) (stringp (car close))))
+    (<span style="color: #e45649;">let*</span> ((p (point))
+           (m (mark))
+           (left-char c)
+           (right-char (<span style="color: #e45649;">if</span> close (car close) c))
+           (pos-left (min p m))
+           (pos-right (+ (length c) (max p m)))
+           (pos-finish (<span style="color: #e45649;">if</span> (&gt; p m) (+ pos-right (length right-char)) pos-left)))
+      (<span style="color: #e45649;">save-excursion</span>
+        (goto-char pos-left)
+        (insert left-char)
+        (goto-char pos-right)
+        (insert right-char))
+
+      (goto-char pos-finish))))
+
+
+(<span style="color: #e45649;">defun</span> <span style="color: #a626a4;">nth-elt</span> (elt list)
+  <span style="color: #84888b; font-style: italic;">"Return element number of ELT in LIST."</span>
+  (<span style="color: #e45649;">let</span> ((loc (length (member elt list))))
+    (<span style="color: #e45649;">unless</span> (zerop loc)
+      (- (length list) loc))))
+
+(<span style="color: #e45649;">defun</span> <span style="color: #a626a4;">my-org-surround</span> ()
+  <span style="color: #84888b; font-style: italic;">"surround the region with some string"</span>
+  (<span style="color: #e45649;">let</span> (options left right c idx)
+    (mapc (<span style="color: #e45649;">lambda</span> (l)
+            (<span style="color: #e45649;">push</span> (car l) options)
+            (<span style="color: #e45649;">push</span> (cadr l) left)
+            (<span style="color: #e45649;">push</span> (caddr l) right))         
+          org-surround-options)
+    (<span style="color: #e45649;">setq</span> options (reverse options))
+    (<span style="color: #e45649;">setq</span> left (reverse left))
+    (<span style="color: #e45649;">setq</span> right (reverse right))
+    (<span style="color: #e45649;">setq</span> c
+          (ido-completing-read <span style="color: #50a14f;">"surround with: "</span>
+                               options))
+    (<span style="color: #e45649;">setq</span> idx (nth-elt c options))
+    (my-surround-text-with (nth idx left) (nth idx right))))
+
+(<span style="color: #e45649;">defun</span> <span style="color: #a626a4;">my-org-s</span> (n)
+  <span style="color: #84888b; font-style: italic;">"insert s if mark is not active, else add markup"</span>
+  (<span style="color: #e45649;">interactive</span> <span style="color: #50a14f;">"p"</span>)
+  (<span style="color: #e45649;">if</span> mark-active
+      (my-org-surround)
+    (<span style="color: #e45649;">dotimes</span> (x n) (insert <span style="color: #50a14f;">"s"</span>))))
+</pre>
+</div>
+
+
+<p>
+Then adding the following configurations:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp"><span style="color: #9ca0a4;">;; </span><span style="color: #9ca0a4;">the menu options</span>
+(<span style="color: #e45649;">setq</span> org-surround-options `(
+                           (<span style="color: #50a14f;">"bold(*)"</span> <span style="color: #50a14f;">"*"</span> <span style="color: #50a14f;">"*"</span>)
+                           (<span style="color: #50a14f;">"code(~)"</span> <span style="color: #50a14f;">"~"</span> <span style="color: #50a14f;">"~"</span>)
+                           (<span style="color: #50a14f;">"underline(_)"</span> <span style="color: #50a14f;">"_"</span> <span style="color: #50a14f;">"_"</span>)
+                           (<span style="color: #50a14f;">"italic(/)"</span> <span style="color: #50a14f;">"/"</span> <span style="color: #50a14f;">"/"</span>)
+                           (<span style="color: #50a14f;">"strike(+)"</span> <span style="color: #50a14f;">"+"</span> <span style="color: #50a14f;">"+"</span>)
+                           (<span style="color: #50a14f;">"verbatim(=)"</span> <span style="color: #50a14f;">"="</span> <span style="color: #50a14f;">"="</span>)
+                           (<span style="color: #50a14f;">"math($)"</span> <span style="color: #50a14f;">"</span><span style="color: #4078f2; font-weight: bold;">\\</span><span style="color: #4078f2; font-weight: bold;">(</span><span style="color: #50a14f;">"</span> <span style="color: #50a14f;">"</span><span style="color: #4078f2; font-weight: bold;">\\</span><span style="color: #4078f2; font-weight: bold;">)</span><span style="color: #50a14f;">"</span>)
+                           (<span style="color: #50a14f;">"example(e)"</span> <span style="color: #50a14f;">"#+begin_example\n"</span> <span style="color: #50a14f;">"\n#+end_example\n"</span>)
+                           (<span style="color: #50a14f;">"source(s)"</span> <span style="color: #50a14f;">"#+begin_src \n"</span> <span style="color: #50a14f;">"\n#+end_src\n"</span>)
+                           ))
+<span style="color: #9ca0a4;">;; </span><span style="color: #9ca0a4;">add key bindings</span>
+(define-key org-mode-map (kbd <span style="color: #50a14f;">"s"</span>) 'my-org-s)
+</pre>
+</div>
+
+<p>
+You can also customize the variable <code>org-surround-options</code>, adding
+entries in the format <code>("name", "beginning characters" "end
+characters")</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org419945f" class="outline-2">
+<h2 id="org419945f"><span class="section-number-2">3</span> Usage</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+In an Org buffer, first mark some text, and press <code>s</code>, then select from the
+options in the echo area.
+It uses <code>ido</code>, so incremental search is
+available. Sweet.
+</p>
+
+
+<div id="orgc2a77f6" class="figure">
+<p><img src="./org-mode-surround-with-markup.org_1601973935.png" alt="org-mode-surround-with-markup.org_1601973935.png" />
+</p>
+</div>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 邵传明</p>
